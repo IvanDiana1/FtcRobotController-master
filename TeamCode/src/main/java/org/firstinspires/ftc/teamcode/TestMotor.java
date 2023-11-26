@@ -7,10 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.teamcode.ControllerInput;
-import org.firstinspires.ftc.teamcode.Drive;
 
 @TeleOp
 public class TestMotor extends LinearOpMode {
@@ -25,12 +21,15 @@ public class TestMotor extends LinearOpMode {
     CRServo RW;
     Servo servo1;
     DcMotor motor2;
-    Servo servo2;
+    Servo Crs_avion;
 
     public DcMotorEx RF; //motor dreapta fata
     public DcMotorEx RB; //motor dreapta spate
     public DcMotorEx LF; // motor stanga fata
     public DcMotorEx LB; // motor stanga spate
+
+    public static final double DRIVETRAIN_MULTIPLIER = 0.5;
+
     @Override
     public void runOpMode(){
 
@@ -41,10 +40,9 @@ public class TestMotor extends LinearOpMode {
         servo1 = hardwareMap.get(Servo.class, "Cutie");
         motor2 = hardwareMap.get(DcMotor.class, "W Gear");
         motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        servo2 = hardwareMap.get(Servo.class, "Avion");
-        servo2.setPosition(1);
+        Crs_avion = hardwareMap.get(Servo.class, "Avion");
+        Crs_avion.setPosition(1);
         servo1.setPosition(0.15);
-
         RF = hardwareMap.get(DcMotorEx.class, "RF");
         RB = hardwareMap.get(DcMotorEx.class, "RB");
         LF = hardwareMap.get(DcMotorEx.class, "LF");
@@ -60,8 +58,9 @@ public class TestMotor extends LinearOpMode {
         RF.setDirection(DcMotorSimple.Direction.REVERSE);
         RB.setDirection(DcMotorSimple.Direction.FORWARD);
 
+        int pos_lift = 0;
+
         waitForStart();
-        int r =0;
 
         while (opModeIsActive() && !isStopRequested())
         {
@@ -69,36 +68,43 @@ public class TestMotor extends LinearOpMode {
             telemetry.addData("ticks2", motor2.getCurrentPosition());
 
             telemetry.update();
-            if (gamepad1.dpad_up)
+            if(gamepad1.dpad_up )
             {
-                motor1.setTargetPosition(-800);
+
+                pos_lift= 2500;
+                motor1.setTargetPosition(pos_lift);
                 motor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 motor1.setPower(0.5);
-            }
-            if (gamepad1.dpad_down)
+            } else  if (gamepad1.dpad_down )
             {
-                motor1.setTargetPosition(0);
+                pos_lift= 0;
+                motor1.setTargetPosition(pos_lift);
                 motor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 motor1.setPower(0.3);
             }
 
-            while (gamepad2.left_trigger > 0.4)
+
+            if (gamepad2.left_trigger > 0.4)
             {
                 LW.setPower(1);
                 RW.setPower(-1);
             }
-            while (gamepad2.right_trigger > 0.4)
+            else if (gamepad2.right_trigger > 0.4)
             {
                 LW.setPower(-1);
                 RW.setPower(1);
+            }
+            else {
+                LW.setPower(0);
+                RW.setPower(0);
             }
 
             if (gamepad1.left_trigger > 0.4)
             {
 
-                motor2.setTargetPosition(-200);
+                motor2.setTargetPosition(0);
                 motor2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                motor2.setPower(0.5);
+                motor2.setPower(0.3);
                 servo1.setPosition(0.2);
             }
 
@@ -106,13 +112,25 @@ public class TestMotor extends LinearOpMode {
             {
                 motor2.setTargetPosition(1460);
                 motor2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                motor2.setPower(0.5);
-                servo1.setPosition(0.25);
+                motor2.setPower(0.3);
+                servo1.setPosition(0.5);
+
+
             }
+            if(gamepad1.square){
+                motor2.setTargetPosition(700);
+                motor2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motor2.setPower(0.3);
+                servo1.setPosition(0.4);
+                motor1.setTargetPosition(4000);
+                motor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motor1.setPower(0.5);
+            }
+
 
             if (gamepad1.dpad_right)
             {
-                servo2.setPosition(0.5);
+                Crs_avion.setPosition(0.5);
             }
 
             double FW = gamepad2.left_stick_y; //forward
@@ -124,10 +142,10 @@ public class TestMotor extends LinearOpMode {
             double p3 = -FW- SR + TN;
             double p4 = -FW+ SR - TN;
 
-            LF.setPower(p1);
-            RF.setPower(p2);
-            LB.setPower(p3);
-            RB.setPower(p4);
+            LF.setPower(p1 * DRIVETRAIN_MULTIPLIER);
+            RF.setPower(p2 * DRIVETRAIN_MULTIPLIER);
+            LB.setPower(p3 * DRIVETRAIN_MULTIPLIER);
+            RB.setPower(p4 * DRIVETRAIN_MULTIPLIER);
 
         }
     }
